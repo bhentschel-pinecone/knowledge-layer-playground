@@ -54,8 +54,6 @@ if __name__ == "__main__":
     query_embeddings = embedding_model.embed_queries(filtered_texts)
     metadata_filters = [{}] * len(filtered_query_ids)
     query_results: List[Tuple[List[str], List[float]]] = test_index.query_many(10, query_embeddings, metadata_filters)
-    print(query_results[0])
-    print(query_results[1])
     pytrec_dictionary = ndcg_evaluation.build_pytrec_dictionary(filtered_query_ids, query_results)
     # evaluate ndcg on returned results.
     ndcg = ndcg_evaluation.pytrec_ndcg(qrels_dict, pytrec_dictionary, [10])
