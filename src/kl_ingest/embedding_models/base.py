@@ -3,6 +3,7 @@ from typing import List, Optional
 
 from numpy._typing import NDArray
 import numpy as np
+from tqdm import tqdm
 
 
 class TextEmbeddingModel(ABC):
@@ -14,24 +15,25 @@ class TextEmbeddingModel(ABC):
         self.batch_size = batch_size
 
     @abstractmethod
-    def _encode_documents_batch(self,
+    def _embed_documents_batch(self,
                                 documents: List[str]
-                                ) -> List[NDArray[np.float32]]:
+                                ) -> List[List[float]]:
         pass
 
     @staticmethod
     def _batch_iterator(data: list, batch_size):
-        return (data[pos:pos + batch_size] for pos in range(0, len(data), batch_size))
+        return [data[pos:pos + batch_size] for pos in range(0, len(data), batch_size)]
 
     @abstractmethod
-    def _encode_queries_batch(self, queries: List[str]) -> List[NDArray[np.float32]]:
+    def _embed_queries_batch(self, queries: List[str]) -> List[List[float]]:
         pass
 
-    def encode_documents(self, documents: List[str]) -> List[NDArray[np.float32]]:
+    def embed_documents(self, documents: List[str]) -> List[List[float]]:
         encoded_docs = []
-        for batch in self._batch_iterator(documents, self.batch_size):
+        batches = self._batch_iterator(documents, self.batch_size)
+        for batch in tqdm(batches, total=len(batches)):
             try:
-                encoded_docs.extend(self._encode_documents_batch(batch))
+                encoded_docs.extend(self._embed_documents_batch(batch))
             except Exception as e:
                 raise RuntimeError(
                     f"Failed to enconde documents using {self.__class__.__name__}. "
@@ -40,7 +42,7 @@ class TextEmbeddingModel(ABC):
 
         return encoded_docs  # TODO: consider yielding a generator
 
-    def encode_queries(self, queries: List[str]) -> List[NDArray[np.float32]]:
+    def embed_queries(self, queries: List[str]) -> List[List[float]]:
         """
 
         Encode queries in batches. Will iterate over batch of queries and encode them using the _encode_queries_batch method.
@@ -55,7 +57,7 @@ class TextEmbeddingModel(ABC):
         kb_queries = []
         for batch in self._batch_iterator(queries, self.batch_size):
             try:
-                kb_queries.extend(self._encode_queries_batch(batch))
+                kb_queries.extend(self._embed_queries_batch(batch))
             except Exception as e:
                 raise RuntimeError(
                     f"Failed to enconde queries using {self.__class__.__name__}. "

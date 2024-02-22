@@ -6,7 +6,7 @@ import os
 from typing import List
 
 # Taken from https://stackoverflow.com/a/67097076
-__version__ = importlib.metadata.version("knowledge-layer-playground")
+__version__ = 0.1
 
 IGNORED_WARNINGS: List[str] = [
 ]

@@ -6,6 +6,7 @@ class DataLoader:
 
     def parquet_folder_to_pandas(self, folder: str) -> List[pandas.DataFrame]:
         files = [f for f in os.listdir(folder) if os.path.isfile(os.path.join(folder, f))]
+        files = files[:1]
         return [self.parquet_file_to_pandas(os.path.join(folder, f)) for f in files]
 
     def parquet_file_to_pandas(self, file: str) -> pandas.DataFrame:
